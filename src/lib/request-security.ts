@@ -1,5 +1,5 @@
 import "server-only";
-import {NextRequest} from "next/server";
+import type {NextRequest} from "next/server";
 export function isSameOrigin(request:NextRequest):boolean{
  const origin=request.headers.get("origin");
  if(!origin)return false;
