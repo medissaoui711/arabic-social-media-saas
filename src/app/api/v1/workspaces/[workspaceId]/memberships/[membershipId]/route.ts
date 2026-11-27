@@ -1,5 +1,6 @@
 import {NextRequest,NextResponse} from "next/server";
 import {isSameOrigin} from "@/lib/request-security";
+import {assertWorkspaceOwnerRemains} from "@/lib/membership-invariants";
 import {z} from "zod";
 import {getCurrentUser} from "@/lib/auth";
 import {AccessDeniedError,withWorkspace} from "@/lib/tenant";
@@ -14,9 +15,9 @@ export async function PATCH(request:NextRequest,context:Context){
   const updated=await withWorkspace(user.id,workspaceId,["OWNER"],async tx=>{
    await tx.$queryRaw`SELECT id FROM memberships WHERE workspace_id=${workspaceId}::uuid AND role='OWNER'::"WorkspaceRole" FOR UPDATE`;
    const target=await tx.membership.findFirst({where:{id:membershipId,workspaceId}});if(!target)return null;
-   if(target.role==="OWNER"&&parsed.data!=="OWNER"){
+   if(target.role==="OWNER"){
     const owners=await tx.membership.count({where:{workspaceId,role:"OWNER"}});
-    if(owners<=1)throw new Error("LAST_OWNER");
+    assertWorkspaceOwnerRemains(target.role,owners,parsed.data);
    }
    const result=await tx.membership.update({where:{id:membershipId},data:{role:parsed.data}});
    await tx.auditEvent.create({data:{workspaceId,actorId:user.id,action:"membership.role_changed",targetType:"membership",targetId:membershipId,metadata:{from:target.role,to:parsed.data}}});
@@ -37,7 +38,7 @@ export async function DELETE(request:NextRequest,context:Context){
   const removed=await withWorkspace(user.id,workspaceId,["OWNER"],async tx=>{
    await tx.$queryRaw`SELECT id FROM memberships WHERE workspace_id=${workspaceId}::uuid AND role='OWNER'::"WorkspaceRole" FOR UPDATE`;
    const target=await tx.membership.findFirst({where:{id:membershipId,workspaceId}});if(!target)return false;
-   if(target.role==="OWNER"&&await tx.membership.count({where:{workspaceId,role:"OWNER"}})<=1)throw new Error("LAST_OWNER");
+   if(target.role==="OWNER")assertWorkspaceOwnerRemains(target.role,await tx.membership.count({where:{workspaceId,role:"OWNER"}}));
    await tx.membership.delete({where:{id:membershipId}});
    await tx.auditEvent.create({data:{workspaceId,actorId:user.id,action:"membership.removed",targetType:"membership",targetId:membershipId,metadata:{removedUserId:target.userId,removedRole:target.role}}});
    return true;
