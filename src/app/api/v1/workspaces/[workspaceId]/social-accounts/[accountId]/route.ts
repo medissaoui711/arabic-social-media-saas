@@ -1,10 +1,11 @@
 import {NextRequest,NextResponse} from "next/server";
+import {isSameOrigin} from "@/lib/request-security";
 import {getCurrentUser} from "@/lib/auth";
 import {AccessDeniedError,WRITE_ROLES,withWorkspace} from "@/lib/tenant";
 type Context={params:Promise<{workspaceId:string;accountId:string}>};
 export async function DELETE(request:NextRequest,context:Context){
  const user=await getCurrentUser();if(!user)return NextResponse.json({error:"غير مصرح"},{status:401});
- if(request.headers.get("origin")!==new URL(request.url).origin)return NextResponse.json({error:"طلب غير صالح"},{status:403});
+ if(!isSameOrigin(request))return NextResponse.json({error:"طلب غير صالح"},{status:403});
  const {workspaceId,accountId}=await context.params;
  try{const removed=await withWorkspace(user.id,workspaceId,WRITE_ROLES,async tx=>{
   const current=await tx.socialAccount.findFirst({where:{id:accountId,workspaceId}});if(!current)return false;
