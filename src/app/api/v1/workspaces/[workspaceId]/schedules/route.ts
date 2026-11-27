@@ -1,5 +1,5 @@
 import {NextRequest,NextResponse} from "next/server";
-import {Temporal} from "@js-temporal/polyfill";
+import {resolveLocalSchedule} from "@/lib/scheduling";
 import {z} from "zod";
 import {getCurrentUser} from "@/lib/auth";
 import {AccessDeniedError,WRITE_ROLES,withWorkspace} from "@/lib/tenant";
@@ -15,10 +15,10 @@ export async function POST(request:NextRequest,context:Context){
  const user=await getCurrentUser();if(!user)return NextResponse.json({error:"غير مصرح"},{status:401});
  if(request.headers.get("origin")!==new URL(request.url).origin)return NextResponse.json({error:"طلب غير صالح"},{status:403});
  const parsed=schema.safeParse(await request.json().catch(()=>null));if(!parsed.success)return NextResponse.json({error:"بيانات الجدولة غير صالحة",details:parsed.error.flatten()},{status:400});
- let instant:Temporal.Instant;
- try{instant=Temporal.PlainDateTime.from(parsed.data.localDateTime).toZonedDateTime(parsed.data.timeZone,{disambiguation:"reject"}).toInstant();}
- catch{return NextResponse.json({error:"الوقت المحلي غير صالح أو ملتبس بسبب التوقيت الصيفي؛ اختر وقتاً واضحاً ومنطقة زمنية IANA صحيحة"},{status:422});}
- const scheduledAt=new Date(instant.toString());if(scheduledAt<=new Date())return NextResponse.json({error:"يجب اختيار وقت مستقبلي"},{status:422});
+ let resolved:{scheduledAt:Date;timeZone:string;instant:string};
+ try{resolved=resolveLocalSchedule(parsed.data.localDateTime,parsed.data.timeZone);}
+ catch{return NextResponse.json({error:"الوقت المحلي غير صالح أو ملتبس بسبب التوقيت الصيفي أو ليس وقتاً مستقبلياً؛ اختر وقتاً واضحاً ومنطقة زمنية IANA صحيحة"},{status:422});}
+ const scheduledAt=resolved.scheduledAt;
  const {workspaceId}=await context.params;
  try{
   const result=await withWorkspace(user.id,workspaceId,WRITE_ROLES,async tx=>{
