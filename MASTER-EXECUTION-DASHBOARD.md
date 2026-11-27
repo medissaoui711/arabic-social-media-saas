@@ -52,8 +52,11 @@
 - PostgreSQL schema and initial migrations are under `prisma/`; tenant tables use `ENABLE ROW LEVEL SECURITY` and `FORCE ROW LEVEL SECURITY`.
 - Runtime tenant queries use transaction-local `set_config(..., true)`; the local runtime role is configured without superuser or `BYPASSRLS`.
 - Authentication uses Argon2id password hashes and random opaque session tokens stored only as SHA-256 hashes.
-- Content APIs enforce membership and editor roles on the server and write audit events.
-- Unit and PostgreSQL integration tests are committed. No test execution result is claimed: the execution container has no Docker/PostgreSQL client and cannot resolve GitHub to clone/install dependencies. The CI workflow is committed, but no completed workflow result is available in the connected GitHub status response.
+- Content, media, schedule and social-account APIs enforce membership and role checks on the server and write audit events.
+- Media uploads use file-signature inspection, bounded size, generated storage keys and workspace-protected metadata.
+- Scheduling stores UTC instants with IANA timezone identifiers, rejects DST gaps/folds, uses idempotency keys and claims due work with `FOR UPDATE SKIP LOCKED`.
+- Membership role/removal endpoints protect the last Workspace Owner; audit and schedule history are append-only for the runtime role.
+- Local backup and guarded restore scripts are committed. Unit and PostgreSQL integration tests are committed. No test execution result is claimed: the execution container has no Docker/PostgreSQL client and cannot resolve GitHub to clone/install dependencies. The CI workflow is committed, but no completed workflow result is available in the connected GitHub status response.
 
 ## Product scope guardrails
 P1 is an Arabic-first responsive RTL web SaaS with a Modular Monolith and shared backend/API. API prefix: `/api/v1`.
