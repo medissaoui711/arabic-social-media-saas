@@ -1,5 +1,6 @@
 "use client";
 import {useEffect,useState} from "react";
+import MediaPanel from "./media-panel";
 type Workspace={id:string;name:string;role:string};
 type Item={id:string;title:string;body:string;status:"draft"|"ready"|"archived";updatedAt:string};
 export default function DashboardPage(){
@@ -17,5 +18,5 @@ export default function DashboardPage(){
  <section className="dashboard-grid"><form className="panel composer" onSubmit={createContent}><div className="panel-heading"><div><p className="eyebrow">استوديو المحتوى</p><h2>فكرة جديدة</h2></div><span className="soft-tag">مسودة</span></div>
  <label>عنوان المحتوى<input required maxLength={180} value={title} onChange={e=>setTitle(e.target.value)} placeholder="مثال: إطلاق منتجنا الجديد"/></label><label>نص المحتوى<textarea rows={6} maxLength={30000} value={body} onChange={e=>setBody(e.target.value)} placeholder="اكتب فكرتك هنا…"/></label><button disabled={!workspaceId}>حفظ كمسودة</button></form>
  <section className="panel"><div className="panel-heading"><div><p className="eyebrow">مكتبة المحتوى</p><h2>أحدث أعمالك</h2></div><span className="count">{items.length}</span></div>
- {loading?<p className="muted">جارٍ التحميل…</p>:items.length===0?<div className="empty"><span>✦</span><p>لا يوجد محتوى بعد</p><small>ابدأ بكتابة أول فكرة في استوديو المحتوى.</small></div>:<div className="content-list">{items.map(item=><article className="content-item" key={item.id}><div><h3>{item.title}</h3><p>{item.body||"لا يوجد نص إضافي"}</p><small>{new Date(item.updatedAt).toLocaleString("ar")}</small></div><select aria-label="حالة المحتوى" value={item.status} onChange={e=>changeStatus(item,e.target.value as Item["status"])}><option value="draft">مسودة</option><option value="ready">جاهز</option><option value="archived">مؤرشف</option></select></article>)}</div>}</section></section><footer>نَوَاة · إدارة المحتوى الاجتماعي باللغة العربية</footer></main>;
+ {loading?<p className="muted">جارٍ التحميل…</p>:items.length===0?<div className="empty"><span>✦</span><p>لا يوجد محتوى بعد</p><small>ابدأ بكتابة أول فكرة في استوديو المحتوى.</small></div>:<div className="content-list">{items.map(item=><article className="content-item" key={item.id}><div><h3>{item.title}</h3><p>{item.body||"لا يوجد نص إضافي"}</p><small>{new Date(item.updatedAt).toLocaleString("ar")}</small></div><select aria-label="حالة المحتوى" value={item.status} onChange={e=>changeStatus(item,e.target.value as Item["status"])}><option value="draft">مسودة</option><option value="ready">جاهز</option><option value="archived">مؤرشف</option></select></article>)}</div>}</section></section>{workspaceId&&<MediaPanel workspaceId={workspaceId}/>}<footer>نَوَاة · إدارة المحتوى الاجتماعي باللغة العربية</footer></main>;
 }
