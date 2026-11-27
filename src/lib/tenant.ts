@@ -6,7 +6,7 @@ export const WRITE_ROLES:WorkspaceRole[]=["OWNER","ADMIN","EDITOR"];
 export async function withWorkspace<T>(userId:string,workspaceId:string,roles:WorkspaceRole[]|null,operation:(tx:Prisma.TransactionClient,role:WorkspaceRole)=>Promise<T>):Promise<T>{
  return prisma.$transaction(async tx=>{
   // SET LOCAL is scoped to this transaction; pooled connections cannot retain tenant context.
-  await tx.$executeRaw`SELECT set_config('app.current_workspace_id',${workspaceId},true)`;
+  await tx.$queryRaw`SELECT set_config('app.current_workspace_id',${workspaceId},true)`;
   const membership=await tx.membership.findUnique({where:{workspaceId_userId:{workspaceId,userId}}});
   if(!membership||(roles&&!roles.includes(membership.role)))throw new AccessDeniedError("Workspace access denied");
   return operation(tx,membership.role);
