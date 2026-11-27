@@ -47,7 +47,15 @@
 - Initial commit created `README.md`; subsequent architecture/baseline package is recorded in the next commit.
 - No deployment, paid service, paid account, domain purchase, production integration, or customer-data use has been performed.
 
-## Implementation evidence (2026-11-27)\n- Project scaffold and application dependencies are committed in `package.json` and `tsconfig.json`.\n- PostgreSQL schema and initial migrations are under `prisma/`; tenant tables use `ENABLE ROW LEVEL SECURITY` and `FORCE ROW LEVEL SECURITY`.\n- Runtime tenant queries use transaction-local `set_config(..., true)`; the local runtime role is configured without superuser or `BYPASSRLS`.\n- Authentication uses Argon2id password hashes and random opaque session tokens stored only as SHA-256 hashes.\n- Content APIs enforce membership and editor roles on the server and write audit events.\n- Unit and PostgreSQL integration tests are committed. No test execution result is claimed yet because this execution environment could not reach GitHub to clone the repository or install dependencies. CI is configured to execute the checks on subsequent pushes.\n\n## Product scope guardrails
+## Implementation evidence (2026-11-27)
+- Project scaffold and application dependencies are committed in `package.json` and `tsconfig.json`.
+- PostgreSQL schema and initial migrations are under `prisma/`; tenant tables use `ENABLE ROW LEVEL SECURITY` and `FORCE ROW LEVEL SECURITY`.
+- Runtime tenant queries use transaction-local `set_config(..., true)`; the local runtime role is configured without superuser or `BYPASSRLS`.
+- Authentication uses Argon2id password hashes and random opaque session tokens stored only as SHA-256 hashes.
+- Content APIs enforce membership and editor roles on the server and write audit events.
+- Unit and PostgreSQL integration tests are committed. No test execution result is claimed yet because this execution environment could not reach GitHub to clone the repository or install dependencies. CI is configured to execute the checks on subsequent pushes.
+
+## Product scope guardrails
 P1 is an Arabic-first responsive RTL web SaaS with a Modular Monolith and shared backend/API. API prefix: `/api/v1`.
 
 P1 includes authentication foundation; users/workspaces/memberships/RBAC; strict tenant isolation; content studio/lifecycle; secure media; internal calendar/scheduling; internal social-account records/metadata; audit/security/backup/reliability foundations.
