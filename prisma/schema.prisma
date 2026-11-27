@@ -24,6 +24,15 @@ enum ScheduleStatus {
   completed
   failed
 }
+enum SocialPlatform {
+  facebook
+  instagram
+  tiktok
+  youtube
+  linkedin
+  x
+  other
+}
 model User {
   id String @id @default(uuid()) @db.Uuid
   email String @unique @db.VarChar(320)
@@ -56,6 +65,8 @@ model Workspace {
   contents ContentItem[]
   auditEvents AuditEvent[]
   mediaAssets MediaAsset[]
+  schedules ScheduleJob[]
+  socialAccounts SocialAccount[]
   @@map("workspaces")
 }
 model Membership {
@@ -86,6 +97,8 @@ model ContentItem {
   createdBy Membership @relation("ContentCreator", fields: [workspaceId, createdById], references: [workspaceId, userId], onDelete: Restrict)
   @@index([workspaceId, status, updatedAt(sort: Desc)])
   @@index([workspaceId, scheduledAt])
+  @@unique([workspaceId, id])
+  schedules ScheduleJob[]
   @@map("content_items")
 }
 model MediaAsset {
@@ -102,6 +115,54 @@ model MediaAsset {
   createdBy Membership @relation("MediaCreator", fields: [workspaceId, createdById], references: [workspaceId, userId], onDelete: Restrict)
   @@index([workspaceId, createdAt(sort: Desc)])
   @@map("media_assets")
+}
+model ScheduleJob {
+  id String @id @default(uuid()) @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  contentId String @map("content_id") @db.Uuid
+  status ScheduleStatus @default(scheduled)
+  scheduledAt DateTime @map("scheduled_at") @db.Timestamptz(6)
+  timezone String @db.VarChar(64)
+  idempotencyKey String @map("idempotency_key") @db.VarChar(128)
+  attemptCount Int @default(0) @map("attempt_count")
+  claimedAt DateTime? @map("claimed_at") @db.Timestamptz(6)
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
+  lastError String? @map("last_error") @db.Text
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  content ContentItem @relation(fields: [workspaceId, contentId], references: [workspaceId, id], onDelete: Restrict)
+  events ScheduleEvent[]
+  @@unique([workspaceId, idempotencyKey])
+  @@unique([workspaceId, id])
+  @@index([workspaceId, status, scheduledAt])
+  @@map("schedule_jobs")
+}
+model ScheduleEvent {
+  id String @id @default(uuid()) @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  scheduleId String @map("schedule_id") @db.Uuid
+  fromStatus ScheduleStatus? @map("from_status")
+  toStatus ScheduleStatus @map("to_status")
+  detail Json @default("{}")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  schedule ScheduleJob @relation(fields: [workspaceId, scheduleId], references: [workspaceId, id], onDelete: Cascade)
+  @@index([workspaceId, scheduleId, createdAt])
+  @@map("schedule_events")
+}
+model SocialAccount {
+  id String @id @default(uuid()) @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  platform SocialPlatform
+  accountName String @map("account_name") @db.VarChar(120)
+  handle String @db.VarChar(120)
+  notes String? @db.VarChar(1000)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  @@unique([workspaceId, platform, handle])
+  @@index([workspaceId, platform])
+  @@map("social_accounts")
 }
 model AuditEvent {
   id String @id @default(uuid()) @db.Uuid
