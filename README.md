@@ -66,4 +66,4 @@ Tests are not considered passed until actually executed in an environment with i
 
 P1 excludes external social publishing, social OAuth/API integrations, external analytics synchronization, billing/subscriptions, public registration, and native mobile applications. No paid provider, external account, production deployment or customer data is used.
 
-See [MASTER-EXECUTION-DASHBOARD.md](MASTER-EXECUTION-DASHBOARD.md) for the approved Phase 00–16 sequence and evidence-based status.
+See [MASTER-EXECUTION-DASHBOARD.md](MASTER-EXECUTION-DASHBOARD.md) for the approved Phase 00–16 sequence and evidence-based status.\n\nThe Arabic RTL interface follows selected guidance from [unslop by Damir Sokolovsky](https://github.com/heydamir/unslop), licensed CC BY 4.0. No source code, assets or skill files were copied; see [third-party attribution](docs/third-party/UNSLOP-ATTRIBUTION.md).
