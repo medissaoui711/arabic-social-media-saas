@@ -3,7 +3,8 @@ import {cookies} from "next/headers";
 import {prisma} from "@/lib/prisma";
 import {hashSessionToken,newSessionToken} from "@/lib/security";
 export const SESSION_COOKIE="asms_session";
-const ttlDays=Math.min(Math.max(Number(process.env.SESSION_TTL_DAYS??14),1),30);
+const configuredTtl=Number(process.env.SESSION_TTL_DAYS??14);
+const ttlDays=Number.isFinite(configuredTtl)?Math.min(Math.max(configuredTtl,1),30):14;
 export async function createSession(userId:string){
  const token=newSessionToken(),expiresAt=new Date(Date.now()+ttlDays*86400_000);
  await prisma.session.create({data:{tokenHash:hashSessionToken(token),userId,expiresAt}});
