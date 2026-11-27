@@ -26,10 +26,10 @@
 | 04 | Authentication, Sessions, and RBAC | **IN PROGRESS** | Password hashing, one-time owner bootstrap, opaque DB-backed sessions and server-side role checks are implemented; rate limiting and remaining auth controls are incomplete. |
 | 05 | Users, Workspaces, Memberships, and Tenant Isolation | **IN PROGRESS** | User/workspace/membership schema, membership-based workspace access, forced RLS and transaction-local tenant context are implemented; integration tests are committed but not yet executed. |
 | 06 | Content Studio and Content Lifecycle | **IN PROGRESS** | Workspace-scoped content create/list/status APIs, Arabic UI, approved status validation and audit events are implemented; end-to-end verification pending. |
-| 07 | Secure Media Management | **NOT STARTED** | Requires approved storage boundary and upload-security design. |
-| 08 | Internal Calendar and Scheduling Engine | **NOT STARTED** | Requires approved worker/queue execution approach and time semantics. |
-| 09 | Internal Social-Account Records | **NOT STARTED** | Internal metadata only; no social OAuth/API integration. |
-| 10 | Audit, Security, Backup, and Reliability | **NOT STARTED** | Requires database/runtime foundation and security controls. |
+| 07 | Secure Media Management | **IN PROGRESS** | Workspace-scoped upload/list/download APIs, file-signature validation, SHA-256 integrity metadata, local private storage and RLS metadata are implemented; runtime validation pending. |
+| 08 | Internal Calendar and Scheduling Engine | **IN PROGRESS** | UTC schedule records, IANA timezone/DST rejection for ambiguous local times, idempotency keys, schedule history, row-lock/skip-locked due worker and manual completion/cancellation are implemented; runtime verification pending. |
+| 09 | Internal Social-Account Records | **IN PROGRESS** | Workspace-scoped metadata CRUD and Arabic dashboard UI are implemented; no OAuth or external integration. Runtime verification pending. |
+| 10 | Audit, Security, Backup, and Reliability | **IN PROGRESS** | Sensitive content, media, schedule and social-account changes write audit events; security headers and RLS foundations are committed. Backup/restore and full reliability verification remain outstanding. |
 | 11 | P1 Integration and Acceptance Verification | **NOT STARTED** | Depends on P1 phases 02–10; includes integrated acceptance evidence. |
 | 12 | P2 Waitlist, Invitations, and Dashboards | **NOT STARTED** | Separate P2 scope; waitlist does not grant product access. |
 | 13 | P3 Server-Side Invitation and Access Enforcement | **NOT STARTED** | Depends on P2 and approved invite/access policy. |
@@ -58,7 +58,7 @@
 ## Product scope guardrails
 P1 is an Arabic-first responsive RTL web SaaS with a Modular Monolith and shared backend/API. API prefix: `/api/v1`.
 
-P1 includes authentication foundation; users/workspaces/memberships/RBAC; strict tenant isolation; content studio/lifecycle; secure media; internal calendar/scheduling; internal social-account records/metadata; audit/security/backup/reliability foundations.
+P1 includes authentication foundation; users/workspaces/memberships/RBAC; strict tenant isolation; content studio/lifecycle; secure media; internal calendar/scheduling; internal social-account records/metadata; audit/security/backup/reliability foundations. The first vertical slices for these modules are in progress; phases 07–11 are not accepted or complete.
 
 P1 excludes native mobile applications, external social publishing, social OAuth/API integrations, external analytics synchronization, billing/subscriptions, and public registration.
 
