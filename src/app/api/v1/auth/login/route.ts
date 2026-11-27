@@ -1,4 +1,5 @@
 import {NextRequest,NextResponse} from "next/server";
+import {isSameOrigin} from "@/lib/request-security";
 import {z} from "zod";
 import {prisma} from "@/lib/prisma";
 import {createSession} from "@/lib/auth";
@@ -6,7 +7,7 @@ import {hashSessionToken,normalizeEmail,verifyPassword} from "@/lib/security";
 const schema=z.object({email:z.string().email().max(320),password:z.string().min(1).max(256)});
 const WINDOW_MS=15*60*1000,MAX_ATTEMPTS=10;
 export async function POST(request:NextRequest){
- if(request.headers.get("origin")!==new URL(request.url).origin)return NextResponse.json({error:"طلب غير صالح"},{status:403});
+ if(!isSameOrigin(request))return NextResponse.json({error:"طلب غير صالح"},{status:403});
  const parsed=schema.safeParse(await request.json().catch(()=>null));if(!parsed.success)return NextResponse.json({error:"بيانات الدخول غير صالحة"},{status:400});
  const email=normalizeEmail(parsed.data.email),key=hashSessionToken("login:"+email),now=new Date();
  let state=await prisma.authRateLimit.findUnique({where:{key}});
