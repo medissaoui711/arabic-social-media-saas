@@ -1,4 +1,5 @@
 import {NextRequest,NextResponse} from "next/server";
+import {isSameOrigin} from "@/lib/request-security";
 import {resolveLocalSchedule} from "@/lib/scheduling";
 import {z} from "zod";
 import {getCurrentUser} from "@/lib/auth";
@@ -13,7 +14,7 @@ export async function GET(_request:NextRequest,context:Context){
 }
 export async function POST(request:NextRequest,context:Context){
  const user=await getCurrentUser();if(!user)return NextResponse.json({error:"غير مصرح"},{status:401});
- if(request.headers.get("origin")!==new URL(request.url).origin)return NextResponse.json({error:"طلب غير صالح"},{status:403});
+ if(!isSameOrigin(request))return NextResponse.json({error:"طلب غير صالح"},{status:403});
  const parsed=schema.safeParse(await request.json().catch(()=>null));if(!parsed.success)return NextResponse.json({error:"بيانات الجدولة غير صالحة",details:parsed.error.flatten()},{status:400});
  let resolved:{scheduledAt:Date;timeZone:string;instant:string};
  try{resolved=resolveLocalSchedule(parsed.data.localDateTime,parsed.data.timeZone);}
