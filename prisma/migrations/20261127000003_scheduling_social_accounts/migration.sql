@@ -1,3 +1,4 @@
+ALTER TABLE content_items ADD CONSTRAINT content_workspace_id_unique UNIQUE(workspace_id,id);
 CREATE TYPE "SocialPlatform" AS ENUM ('facebook','instagram','tiktok','youtube','linkedin','x','other');
 CREATE TABLE schedule_jobs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
