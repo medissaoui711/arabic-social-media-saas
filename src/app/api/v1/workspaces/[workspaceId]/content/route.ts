@@ -1,4 +1,5 @@
 import {NextRequest,NextResponse} from "next/server";
+import {isSameOrigin} from "@/lib/request-security";
 import {getCurrentUser} from "@/lib/auth";
 import {contentInput} from "@/lib/content";
 import {AccessDeniedError,WRITE_ROLES,withWorkspace} from "@/lib/tenant";
@@ -11,7 +12,7 @@ export async function GET(_request:NextRequest,context:Context){
 }
 export async function POST(request:NextRequest,context:Context){
  const user=await getCurrentUser();if(!user)return NextResponse.json({error:"غير مصرح"},{status:401});
- if(request.headers.get("origin")!==new URL(request.url).origin)return NextResponse.json({error:"طلب غير صالح"},{status:403});
+ if(!isSameOrigin(request))return NextResponse.json({error:"طلب غير صالح"},{status:403});
  const parsed=contentInput.safeParse(await request.json().catch(()=>null));if(!parsed.success)return NextResponse.json({error:"تحقق من عنوان ونص المحتوى",details:parsed.error.flatten()},{status:400});
  const {workspaceId}=await context.params;
  try{
