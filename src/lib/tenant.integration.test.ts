@@ -12,6 +12,9 @@ describe.skipIf(!run)("PostgreSQL tenant isolation",()=>{
   await prisma.user.deleteMany({where:{id:userId}});
  });
  it("isolates workspace rows and clears transaction-local context on pooled connections",async()=>{
+  const role=await prisma.$queryRaw<Array<{rolsuper:boolean;rolbypassrls:boolean}>>`SELECT rolsuper,rolbypassrls FROM pg_roles WHERE rolname=current_user`;
+  expect(role[0]?.rolsuper).toBe(false);
+  expect(role[0]?.rolbypassrls).toBe(false);
   await prisma.user.create({data:{id:userId,email,passwordHash:"not-used-in-this-test",displayName:"Tenant test"}});
   await prisma.workspace.createMany({data:[{id:workspaceA,name:"Tenant A"},{id:workspaceB,name:"Tenant B"}]});
   await prisma.$transaction(async tx=>{
