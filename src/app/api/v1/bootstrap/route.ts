@@ -14,7 +14,7 @@ export async function POST(request:NextRequest){
    if(await tx.user.count()!==0)throw new Error("BOOTSTRAP_CLOSED");
    const user=await tx.user.create({data:{email:normalizeEmail(input.data.email),passwordHash,displayName:input.data.displayName}});
    const workspace=await tx.workspace.create({data:{name:input.data.workspaceName}});
-   await tx.$executeRaw`SELECT set_config('app.current_workspace_id',${workspace.id},true)`;
+   await tx.$queryRaw`SELECT set_config('app.current_workspace_id',${workspace.id},true)`;
    await tx.membership.create({data:{userId:user.id,workspaceId:workspace.id,role:"OWNER"}});
    await tx.auditEvent.create({data:{workspaceId:workspace.id,actorId:user.id,action:"workspace.bootstrap",targetType:"workspace",targetId:workspace.id}});
    return {userId:user.id,workspaceId:workspace.id};
