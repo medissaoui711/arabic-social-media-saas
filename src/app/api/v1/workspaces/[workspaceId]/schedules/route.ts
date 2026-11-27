@@ -39,6 +39,7 @@ export async function POST(request:NextRequest,context:Context){
   return NextResponse.json(result,{status:result.replayed?200:201});
  }catch(e){
   if(e instanceof AccessDeniedError)return NextResponse.json({error:"لا تملك صلاحية الجدولة"},{status:403});
+  if(e instanceof Error&&"code" in e&&e.code==="P2002")return NextResponse.json({error:"تم استلام طلب الجدولة مسبقاً"},{status:409});
   if(e instanceof Error&&e.message==="IDEMPOTENCY_CONFLICT")return NextResponse.json({error:"مفتاح منع التكرار مستخدم لطلب مختلف"},{status:409});
   if(e instanceof Error&&e.message==="CONTENT_NOT_FOUND")return NextResponse.json({error:"المحتوى غير موجود"},{status:404});
   if(e instanceof Error&&e.message==="CONTENT_NOT_READY")return NextResponse.json({error:"يجب أن تكون حالة المحتوى جاهزاً قبل جدولته"},{status:409});
