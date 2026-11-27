@@ -1,4 +1,5 @@
 import {NextRequest,NextResponse} from "next/server";
+import {isSameOrigin} from "@/lib/request-security";
 import {z} from "zod";
 import {getCurrentUser} from "@/lib/auth";
 import {AccessDeniedError,withWorkspace} from "@/lib/tenant";
@@ -6,7 +7,7 @@ const roleSchema=z.enum(["OWNER","ADMIN","EDITOR","VIEWER"]);
 type Context={params:Promise<{workspaceId:string;membershipId:string}>};
 export async function PATCH(request:NextRequest,context:Context){
  const user=await getCurrentUser();if(!user)return NextResponse.json({error:"غير مصرح"},{status:401});
- if(request.headers.get("origin")!==new URL(request.url).origin)return NextResponse.json({error:"طلب غير صالح"},{status:403});
+ if(!isSameOrigin(request))return NextResponse.json({error:"طلب غير صالح"},{status:403});
  const parsed=roleSchema.safeParse((await request.json().catch(()=>null))?.role);if(!parsed.success)return NextResponse.json({error:"الدور غير صالح"},{status:400});
  const {workspaceId,membershipId}=await context.params;
  try{
@@ -30,7 +31,7 @@ export async function PATCH(request:NextRequest,context:Context){
 }
 export async function DELETE(request:NextRequest,context:Context){
  const user=await getCurrentUser();if(!user)return NextResponse.json({error:"غير مصرح"},{status:401});
- if(request.headers.get("origin")!==new URL(request.url).origin)return NextResponse.json({error:"طلب غير صالح"},{status:403});
+ if(!isSameOrigin(request))return NextResponse.json({error:"طلب غير صالح"},{status:403});
  const {workspaceId,membershipId}=await context.params;
  try{
   const removed=await withWorkspace(user.id,workspaceId,["OWNER"],async tx=>{
