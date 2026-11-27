@@ -20,12 +20,12 @@
 | Phase | Approved scope (authoritative wording) | Status | Evidence / exit condition |
 |---|---|---|---|
 | 00 | Repository, Environment, Access & Baseline Inspection | **IN PROGRESS** | Repository identity/state rechecked; main initialized; initial dashboard and baseline record committed. Remaining baseline unknowns are recorded. Owner acceptance pending. |
-| 01 | Engineering Architecture and Module Boundaries | **IN PROGRESS** | Architecture foundation, module boundaries, domain/API/security/testing proposals and ADR register being documented. Approval-dependent choices remain proposals. |
+| 01 | Engineering Architecture and Module Boundaries | **IN PROGRESS** | Architecture foundation, module boundaries, domain/API/security/testing proposals and ADR register are committed; implementation alignment and owner acceptance remain open. |
 | 02 | Project Foundation, Environments, Database, CI, and API | **IN PROGRESS** | Next.js/TypeScript scaffold, PostgreSQL schema and initial RLS migration, local Compose database, and CI workflow committed. Runtime verification pending. |
 | 03 | Arabic RTL Responsive Web Interface | **IN PROGRESS** | Arabic RTL login, first-owner setup and content dashboard are implemented; responsive browser verification pending. |
 | 04 | Authentication, Sessions, and RBAC | **IN PROGRESS** | Argon2id password hashing, one-time owner bootstrap, opaque DB-backed sessions, persistent login throttling, origin checks and server-side role checks are implemented; password recovery and full session lifecycle hardening remain. |
 | 05 | Users, Workspaces, Memberships, and Tenant Isolation | **IN PROGRESS** | User/workspace/membership schema, membership-based workspace access, forced RLS, transaction-local tenant context, database-enforced content authorship and last-owner-safe role/removal APIs are implemented; integration tests are committed but not yet executed. |
-| 06 | Content Studio and Content Lifecycle | **IN PROGRESS** | Workspace-scoped content create/list/status APIs, Arabic UI, approved status validation and audit events are implemented; end-to-end verification pending. |
+| 06 | Content Studio and Content Lifecycle | **IN PROGRESS** | Workspace-scoped content create/list/edit/status APIs, Arabic UI, approved status validation and audit events are implemented; end-to-end verification pending. |
 | 07 | Secure Media Management | **IN PROGRESS** | Workspace-scoped upload/list/download APIs, file-signature validation, SHA-256 integrity metadata, local private storage and RLS metadata are implemented; runtime validation pending. |
 | 08 | Internal Calendar and Scheduling Engine | **IN PROGRESS** | UTC schedule records, IANA timezone/DST rejection for ambiguous local times, idempotency keys, schedule history, row-lock/skip-locked due worker and manual completion/cancellation are implemented; runtime verification pending. |
 | 09 | Internal Social-Account Records | **IN PROGRESS** | Workspace-scoped metadata CRUD and Arabic dashboard UI are implemented; no OAuth or external integration. Runtime verification pending. |
@@ -53,7 +53,7 @@
 - Runtime tenant queries use transaction-local `set_config(..., true)`; the local runtime role is configured without superuser or `BYPASSRLS`.
 - Authentication uses Argon2id password hashes and random opaque session tokens stored only as SHA-256 hashes.
 - Content APIs enforce membership and editor roles on the server and write audit events.
-- Unit and PostgreSQL integration tests are committed. No test execution result is claimed yet because this execution environment could not reach GitHub to clone the repository or install dependencies. CI is configured to execute the checks on subsequent pushes.
+- Unit and PostgreSQL integration tests are committed. No test execution result is claimed: the execution container has no Docker/PostgreSQL client and cannot resolve GitHub to clone/install dependencies. The CI workflow is committed, but no completed workflow result is available in the connected GitHub status response.
 
 ## Product scope guardrails
 P1 is an Arabic-first responsive RTL web SaaS with a Modular Monolith and shared backend/API. API prefix: `/api/v1`.
