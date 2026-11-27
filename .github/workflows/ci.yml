@@ -1,0 +1,51 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres_admin
+          POSTGRES_PASSWORD: ci-admin-password
+          POSTGRES_DB: arabic_social_saas
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres_admin -d arabic_social_saas"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://app_user:ci-app-password@localhost:5432/arabic_social_saas?schema=public
+      DIRECT_URL: postgresql://postgres_admin:ci-admin-password@localhost:5432/arabic_social_saas?schema=public
+      BOOTSTRAP_TOKEN: ci-only-bootstrap-token-value-not-used-in-production
+      APP_ORIGIN: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Create restricted runtime database role
+        run: |
+          PGPASSWORD=ci-admin-password psql "$DIRECT_URL" -v ON_ERROR_STOP=1 -c "CREATE ROLE app_user LOGIN PASSWORD 'ci-app-password' NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOBYPASSRLS"
+      - name: Generate Prisma client
+        run: npm run db:generate
+      - name: Apply database migrations
+        run: npm run db:deploy
+      - name: Unit tests
+        run: npm test
+      - name: TypeScript
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Production build
+        run: npm run build
