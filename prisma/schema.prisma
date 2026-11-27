@@ -67,6 +67,7 @@ model Membership {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@unique([workspaceId, userId])
   @@index([userId, workspaceId])
+  createdContent ContentItem[] @relation("ContentCreator")
   @@map("memberships")
 }
 model ContentItem {
@@ -80,6 +81,7 @@ model ContentItem {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy Membership @relation("ContentCreator", fields: [workspaceId, createdById], references: [workspaceId, userId], onDelete: Restrict)
   @@index([workspaceId, status, updatedAt(sort: Desc)])
   @@index([workspaceId, scheduledAt])
   @@map("content_items")
