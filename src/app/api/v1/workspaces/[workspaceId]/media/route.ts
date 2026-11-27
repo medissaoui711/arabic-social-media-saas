@@ -1,13 +1,12 @@
 import {createHash} from "node:crypto";
 import {isSameOrigin} from "@/lib/request-security";
 import {NextRequest,NextResponse} from "next/server";
-import {fileTypeFromBuffer} from "file-type";
+import {detectAllowedMedia} from "@/lib/media-validation";
 import {getCurrentUser} from "@/lib/auth";
 import {AccessDeniedError,WRITE_ROLES,withWorkspace} from "@/lib/tenant";
 import {deleteMediaFile,saveMediaFile} from "@/lib/media-storage";
 type Context={params:Promise<{workspaceId:string}>};
 const MAX_BYTES=20*1024*1024;
-const ALLOWED=new Set(["image/jpeg","image/png","image/webp","video/mp4"]);
 export async function GET(_request:NextRequest,context:Context){
  const user=await getCurrentUser();if(!user)return NextResponse.json({error:"غير مصرح"},{status:401});
  const {workspaceId}=await context.params;
@@ -23,8 +22,8 @@ export async function POST(request:NextRequest,context:Context){
  if(!(file instanceof File))return NextResponse.json({error:"اختر ملفاً صالحاً"},{status:400});
  if(file.size<1||file.size>MAX_BYTES)return NextResponse.json({error:"حجم الملف يتجاوز الحد المسموح (20MB)"},{status:413});
  const bytes=Buffer.from(await file.arrayBuffer());
- const detected=await fileTypeFromBuffer(bytes);
- if(!detected||!ALLOWED.has(detected.mime))return NextResponse.json({error:"نوع الملف غير مدعوم أو لا يطابق محتواه الفعلي"},{status:415});
+ const detected=await detectAllowedMedia(bytes);
+ if(!detected)return NextResponse.json({error:"نوع الملف غير مدعوم أو لا يطابق محتواه الفعلي"},{status:415});
  const {workspaceId}=await context.params;
  try{
   const asset=await withWorkspace(user.id,workspaceId,WRITE_ROLES,async tx=>{
