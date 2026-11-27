@@ -1,4 +1,5 @@
 import {createHash} from "node:crypto";
+import {isSameOrigin} from "@/lib/request-security";
 import {NextRequest,NextResponse} from "next/server";
 import {fileTypeFromBuffer} from "file-type";
 import {getCurrentUser} from "@/lib/auth";
@@ -17,7 +18,7 @@ export async function GET(_request:NextRequest,context:Context){
 }
 export async function POST(request:NextRequest,context:Context){
  const user=await getCurrentUser();if(!user)return NextResponse.json({error:"غير مصرح"},{status:401});
- if(request.headers.get("origin")!==new URL(request.url).origin)return NextResponse.json({error:"طلب غير صالح"},{status:403});
+ if(!isSameOrigin(request))return NextResponse.json({error:"طلب غير صالح"},{status:403});
  const form=await request.formData().catch(()=>null),file=form?.get("file");
  if(!(file instanceof File))return NextResponse.json({error:"اختر ملفاً صالحاً"},{status:400});
  if(file.size<1||file.size>MAX_BYTES)return NextResponse.json({error:"حجم الملف يتجاوز الحد المسموح (20MB)"},{status:413});
