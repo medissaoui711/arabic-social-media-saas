@@ -14,7 +14,7 @@ jobs:
         image: postgres:16
         env:
           POSTGRES_USER: postgres_admin
-          POSTGRES_PASSWORD: ci-admin-password
+          POSTGRES_PASSWORD: ${{ github.run_id }}-postgres-ci
           POSTGRES_DB: arabic_social_saas
         ports:
           - 5432:5432
@@ -22,10 +22,9 @@ jobs:
           --health-cmd "pg_isready -U postgres_admin -d arabic_social_saas"
           --health-interval 5s --health-timeout 5s --health-retries 10
     env:
-      DATABASE_URL: postgresql://app_user:ci-app-password@localhost:5432/arabic_social_saas?schema=public
-      DIRECT_URL: postgresql://postgres_admin:ci-admin-password@localhost:5432/arabic_social_saas?schema=public
-      BOOTSTRAP_TOKEN: ci-only-bootstrap-token-value-not-used-in-production
-      APP_ORIGIN: http://localhost:3000
+      DATABASE_URL: postgresql://app_user:${{ github.run_id }}-app-ci@localhost:5432/arabic_social_saas?schema=public
+      DIRECT_URL: postgresql://postgres_admin:${{ github.run_id }}-postgres-ci@localhost:5432/arabic_social_saas?schema=public
+            APP_ORIGIN: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -35,7 +34,7 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Create restricted runtime database role
         run: |
-          PGPASSWORD=ci-admin-password psql "$DIRECT_URL" -v ON_ERROR_STOP=1 -c "CREATE ROLE app_user LOGIN PASSWORD 'ci-app-password' NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOBYPASSRLS"
+          PGPASSWORD=${{ github.run_id }}-postgres-ci psql "$DIRECT_URL" -v ON_ERROR_STOP=1 -c "CREATE ROLE app_user LOGIN PASSWORD '${{ github.run_id }}-app-ci' NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOBYPASSRLS"
       - name: Generate Prisma client
         run: npm run db:generate
       - name: Apply database migrations
