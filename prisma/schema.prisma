@@ -55,6 +55,7 @@ model Workspace {
   memberships Membership[]
   contents ContentItem[]
   auditEvents AuditEvent[]
+  mediaAssets MediaAsset[]
   @@map("workspaces")
 }
 model Membership {
@@ -68,6 +69,7 @@ model Membership {
   @@unique([workspaceId, userId])
   @@index([userId, workspaceId])
   createdContent ContentItem[] @relation("ContentCreator")
+  createdMedia MediaAsset[] @relation("MediaCreator")
   @@map("memberships")
 }
 model ContentItem {
@@ -85,6 +87,21 @@ model ContentItem {
   @@index([workspaceId, status, updatedAt(sort: Desc)])
   @@index([workspaceId, scheduledAt])
   @@map("content_items")
+}
+model MediaAsset {
+  id String @id @default(uuid()) @db.Uuid
+  workspaceId String @map("workspace_id") @db.Uuid
+  createdById String @map("created_by_id") @db.Uuid
+  storageKey String @unique @map("storage_key") @db.VarChar(255)
+  originalName String @map("original_name") @db.VarChar(180)
+  mimeType String @map("mime_type") @db.VarChar(100)
+  sizeBytes Int @map("size_bytes")
+  sha256 String @db.Char(64)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy Membership @relation("MediaCreator", fields: [workspaceId, createdById], references: [workspaceId, userId], onDelete: Restrict)
+  @@index([workspaceId, createdAt(sort: Desc)])
+  @@map("media_assets")
 }
 model AuditEvent {
   id String @id @default(uuid()) @db.Uuid
