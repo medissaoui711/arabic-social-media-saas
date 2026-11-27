@@ -38,6 +38,13 @@ The `POST /api/v1/bootstrap` endpoint is enabled only while the users table is e
 
 The internal endpoint `POST /api/internal/scheduler/tick` requires `Authorization: Bearer $SCHEDULER_TOKEN`. It claims due records with row locking and marks them `due`; it does not publish to social networks. Local schedule times are resolved with an IANA timezone and ambiguous/nonexistent DST times are rejected.
 
+## Local database backup and restore
+
+- Create a local custom-format backup: `bash scripts/backup-db.sh`.
+- Restore a backup over the local development database only: `CONFIRM_LOCAL_RESTORE=YES bash scripts/restore-db.sh backups/<backup-file>.dump`.
+
+Restore is destructive to the local development database and requires the explicit confirmation variable. Backup/restore scripts have been committed but have not been executed or restore-tested in this environment.
+
 ## Verification commands
 
 - `npm test`
