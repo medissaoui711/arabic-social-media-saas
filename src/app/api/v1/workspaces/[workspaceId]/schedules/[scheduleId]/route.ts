@@ -1,10 +1,11 @@
 import {NextRequest,NextResponse} from "next/server";
+import {isSameOrigin} from "@/lib/request-security";
 import {getCurrentUser} from "@/lib/auth";
 import {AccessDeniedError,WRITE_ROLES,withWorkspace} from "@/lib/tenant";
 type Context={params:Promise<{workspaceId:string;scheduleId:string}>};
 export async function PATCH(request:NextRequest,context:Context){
  const user=await getCurrentUser();if(!user)return NextResponse.json({error:"غير مصرح"},{status:401});
- if(request.headers.get("origin")!==new URL(request.url).origin)return NextResponse.json({error:"طلب غير صالح"},{status:403});
+ if(!isSameOrigin(request))return NextResponse.json({error:"طلب غير صالح"},{status:403});
  const body=await request.json().catch(()=>null);
  if(!body||!["cancel","complete"].includes(body.action))return NextResponse.json({error:"الإجراء غير صالح"},{status:400});
  const {workspaceId,scheduleId}=await context.params;
